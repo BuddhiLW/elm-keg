@@ -1,18 +1,24 @@
-module Shared exposing (Data, Model, Msg(..), SharedMsg(..), template)
+module Shared exposing (Data, Model, Msg(..), template)
+
+-- SharedMsg(..),
 
 import BackendTask exposing (BackendTask)
+import DocsSection
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Input as Input
 import FatalError exposing (FatalError)
 import Html exposing (Html)
 import Html.Events
+import Html.Styled
 import Pages.Flags
 import Pages.PageUrl exposing (PageUrl)
 import Route exposing (Route)
 import SharedTemplate exposing (SharedTemplate)
+import TableOfContents
 import UrlPath exposing (UrlPath)
 import View exposing (View)
+import View.Header
 
 
 template : SharedTemplate Msg Model Data msg
@@ -37,15 +43,12 @@ type Msg
 
 
 type alias Data =
-    ()
-
-
-type SharedMsg
-    = NoOp
+    TableOfContents.TableOfContents TableOfContents.Data
 
 
 type alias Model =
-    { showMenu : Bool
+    { showMobileMenu : Bool
+    , counter : Int
     }
 
 
@@ -63,7 +66,9 @@ init :
             }
     -> ( Model, Effect Msg )
 init flags maybePagePath =
-    ( { showMenu = False }
+    ( { showMobileMenu = False
+      , counter = 0
+      }
     , Effect.none
     )
 
@@ -71,15 +76,14 @@ init flags maybePagePath =
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        _ ->
-            ( model, Effect.none )
+        OnPageChange _ ->
+            ( { model | showMobileMenu = False }, Effect.none )
 
+        ToggleMobileMenu ->
+            ( { model | showMobileMenu = not model.showMobileMenu }, Effect.none )
 
-
--- SharedMsg globalMsg ->
---     ( model, Effect.none )
--- MenuClicked ->
---     ( { model | showMenu = not model.showMenu }, Effect.none )
+        IncrementFromChild ->
+            ( { model | counter = model.counter + 1 }, Effect.none )
 
 
 subscriptions : UrlPath -> Model -> Sub Msg
@@ -89,7 +93,7 @@ subscriptions _ _ =
 
 data : BackendTask FatalError Data
 data =
-    BackendTask.succeed ()
+    TableOfContents.backendTask DocsSection.all
 
 
 view :
@@ -102,27 +106,18 @@ view :
     -> (Msg -> msg)
     -> View msg
     -> { body : List (Html msg), title : String }
-view sharedData page model toMsg pageView =
-    { title = pageView.title
-    , body =
-        [ Element.layout []
-            (el []
-                (row []
-                    [ el []
-                        (Input.button []
-                            { onPress = Just (toMsg ToggleMobileMenu), label = text "Toggle Menu" }
-                        )
-                    , if model.showMenu then
-                        column []
-                            [ el [] (text "Menu item 1")
-                            , el [] (text "Menu item 2")
-                            ]
+view tableOfContents page model toMsg pageView =
+    { body =
+        [ Html.Styled.div []
+            [ View.Header.view ToggleMobileMenu 123 page.path
+                |> Html.Styled.map toMsg
+            , TableOfContents.view model.showMobileMenu False Nothing tableOfContents
+                |> Html.Styled.map toMsg
 
-                      else
-                        el [] (text "")
-                    ]
-                )
-            )
-        , Element.layout [] (column [] pageView.body)
+            -- , pageView.body
+            ]
+            |> Html.Styled.toUnstyled
         ]
+            ++ List.map (Element.layout []) pageView.body
+    , title = pageView.title
     }

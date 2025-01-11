@@ -43,7 +43,8 @@
             "rtfeldman/elm-css": "18.0.0",
             "the-sett/elm-syntax-dsl": "6.0.3",
             "turboMaCk/non-empty-list-alias": "1.4.0",
-            "vito/elm-ansi": "10.0.1"
+            "vito/elm-ansi": "10.0.1",
+            "wolfadex/elm-ansi": "3.0.0"
         },
         "indirect": {
             "Chadtech/elm-bool-extra": "2.4.2",
@@ -60,8 +61,7 @@
             "rtfeldman/elm-iso8601-date-strings": "1.1.4",
             "stil4m/elm-syntax": "7.3.8",
             "stil4m/structured-writer": "1.0.3",
-            "the-sett/elm-pretty-printer": "3.1.0",
-            "wolfadex/elm-ansi": "3.0.0"
+            "the-sett/elm-pretty-printer": "3.1.0"
         }
     },
     "test-dependencies": {
