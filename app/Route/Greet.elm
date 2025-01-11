@@ -2,6 +2,7 @@ module Route.Greet exposing (ActionData, Data, Model, Msg, route)
 
 import BackendTask exposing (BackendTask)
 import BackendTask.Http
+import Element exposing (..)
 import ErrorPage exposing (ErrorPage)
 import FatalError exposing (FatalError)
 import Head
@@ -94,14 +95,15 @@ view :
     -> View (PagesMsg Msg)
 view app shared =
     { title = "Greetings"
+    , attributes = []
     , body =
-        [ Html.div []
-            [ case app.data.name of
+        [ el []
+            (case app.data.name of
                 Just name ->
-                    Html.text ("Hello " ++ name)
+                    text ("Hello " ++ name)
 
                 Nothing ->
-                    Html.text "Hello, I didn't find your name"
-            ]
+                    text "Hello, I didn't find your name"
+            )
         ]
     }

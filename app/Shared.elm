@@ -2,14 +2,16 @@ module Shared exposing (Data, Model, Msg(..), SharedMsg(..), template)
 
 import BackendTask exposing (BackendTask)
 import Effect exposing (Effect)
+import Element exposing (..)
+import Element.Input as Input
 import FatalError exposing (FatalError)
 import Html exposing (Html)
 import Html.Events
 import Pages.Flags
 import Pages.PageUrl exposing (PageUrl)
-import UrlPath exposing (UrlPath)
 import Route exposing (Route)
 import SharedTemplate exposing (SharedTemplate)
+import UrlPath exposing (UrlPath)
 import View exposing (View)
 
 
@@ -20,13 +22,18 @@ template =
     , view = view
     , data = data
     , subscriptions = subscriptions
-    , onPageChange = Nothing
+    , onPageChange = Just OnPageChange
     }
 
 
 type Msg
-    = SharedMsg SharedMsg
-    | MenuClicked
+    = OnPageChange
+        { path : UrlPath
+        , query : Maybe String
+        , fragment : Maybe String
+        }
+    | ToggleMobileMenu
+    | IncrementFromChild
 
 
 type alias Data =
@@ -64,11 +71,15 @@ init flags maybePagePath =
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        SharedMsg globalMsg ->
+        _ ->
             ( model, Effect.none )
 
-        MenuClicked ->
-            ( { model | showMenu = not model.showMenu }, Effect.none )
+
+
+-- SharedMsg globalMsg ->
+--     ( model, Effect.none )
+-- MenuClicked ->
+--     ( { model | showMenu = not model.showMenu }, Effect.none )
 
 
 subscriptions : UrlPath -> Model -> Sub Msg
@@ -92,29 +103,26 @@ view :
     -> View msg
     -> { body : List (Html msg), title : String }
 view sharedData page model toMsg pageView =
-    { body =
-        [ Html.nav []
-            [ Html.button
-                [ Html.Events.onClick MenuClicked ]
-                [ Html.text
-                    (if model.showMenu then
-                        "Close Menu"
+    { title = pageView.title
+    , body =
+        [ Element.layout []
+            (el []
+                (row []
+                    [ el []
+                        (Input.button []
+                            { onPress = Just (toMsg ToggleMobileMenu), label = text "Toggle Menu" }
+                        )
+                    , if model.showMenu then
+                        column []
+                            [ el [] (text "Menu item 1")
+                            , el [] (text "Menu item 2")
+                            ]
 
-                     else
-                        "Open Menu"
-                    )
-                ]
-            , if model.showMenu then
-                Html.ul []
-                    [ Html.li [] [ Html.text "Menu item 1" ]
-                    , Html.li [] [ Html.text "Menu item 2" ]
+                      else
+                        el [] (text "")
                     ]
-
-              else
-                Html.text ""
-            ]
-            |> Html.map toMsg
-        , Html.main_ [] pageView.body
+                )
+            )
+        , Element.layout [] (column [] pageView.body)
         ]
-    , title = pageView.title
     }

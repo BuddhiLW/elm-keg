@@ -1,0 +1,9 @@
+{
+  "name": "buddhilw/elm-portifolio",
+  "summary": "Elm Pages local docs",
+  "version": "1.0.0",
+  "exposed-modules": [
+    "Page",
+    "Route"
+  ]
+}
