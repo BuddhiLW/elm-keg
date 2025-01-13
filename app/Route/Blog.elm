@@ -2,11 +2,13 @@ module Route.Blog exposing (ActionData, Data, Model, Msg, route)
 
 import Article
 import BackendTask exposing (BackendTask)
+import Css exposing (alignSelf)
 import Date
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
+import Element.Region as Region
 import FatalError exposing (FatalError)
 import Head
 import Head.Seo as Seo
@@ -76,14 +78,18 @@ view app shared =
                 ]
                 (text "Blog")
             , el
-                [ Font.size 18
+                [ Font.size 30
                 , Font.color (rgb255 107 114 128)
                 , centerX
+                , Element.paddingXY 0 60
                 ]
                 (text blogDescription)
-            , row
-                [ spacing 16
+            , Element.wrappedRow
+                [ -- Element.centerX
+                  -- Element.spaceEvenly
+                  Element.spacingXY 60 60
                 , width fill
+                , height fill
                 ]
                 (List.map blogCard app.data)
             ]
@@ -122,13 +128,47 @@ blogCard ( route_, info ) =
     Element.link []
         { url = Route.toString route_
         , label =
-            Element.html
-                (Html.div []
-                    [ Html.h2 [] [ Html.text info.title ]
-                    , Html.p [] [ Html.text info.description ]
-                    , Html.time [] [ Html.text (info.published |> Date.format "MMMM ddd, yyyy") ]
+            Element.el
+                [--  Element.width (Element.fillPortion 1)
+                 -- , Element.height Element.fill
+                ]
+                (Element.column
+                    [ spacing 12 ]
+                    [ el
+                        [ Region.heading 1
+                        , alignLeft
+                        , Font.size 28
+                        ]
+                        (text info.title)
+                    , el
+                        [ Region.heading 3
+                        , Font.center
+                        , Font.size 14
+                        ]
+                        (text info.description)
+                    , el
+                        [ Region.heading 3
+                        , Font.center
+                        , Font.size 12
+                        ]
+                        (text (info.published |> Date.format "MMMM ddd, yyyy"))
                     ]
                 )
+
+        -- (Element.el
+        --         []
+        --         (text info.title)
+        --     )
+        -- , Element.el
+        --     []
+        --     (text info.title)
+        -- Element.html
+        --     (Html.div []
+        --         [ Html.h2 [] [ Html.text info.title ]
+        --         , Html.p [] [ Html.text info.description ]
+        --         , Html.time [] [ Html.text (info.published |> Date.format "MMMM ddd, yyyy") ]
+        --         ]
+        --     )
         }
 
 
