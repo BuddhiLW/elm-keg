@@ -8,6 +8,7 @@ import Date exposing (Date)
 import DateOrDateTime
 import Element exposing (..)
 import Element.Border as Border
+import ElmUiRenderer exposing (customRenderer)
 import FatalError exposing (FatalError)
 import Head
 import Head.Seo as Seo
@@ -95,11 +96,17 @@ view app shared =
                 |> Element.html
 
         -- Convert Html.Html to Element
+        -- renderedMarkdown =
+        --     app.data.body
+        --         |> Markdown.Renderer.render TailwindMarkdownRenderer.renderer
+        --         |> Result.withDefault []
+        --         |> List.map htmlToElement
         renderedMarkdown =
             app.data.body
-                |> Markdown.Renderer.render TailwindMarkdownRenderer.renderer
+                |> Markdown.Renderer.render ElmUiRenderer.customRenderer
                 |> Result.withDefault []
-                |> List.map htmlToElement
+
+        -- |> List.map htmlToElement
     in
     { title = app.data.metadata.title
     , attributes = []
@@ -143,9 +150,8 @@ view app shared =
 
                 -- , Element.el [] (authorView author app.data |> htmlToElement)
                 , Element.column
-                    [ width fill
-                    , alignLeft
-                    , paddingXY 100 10
+                    [ Element.width Element.fill
+                    , Element.spacingXY 0 5
                     ]
                     renderedMarkdown
                 ]
