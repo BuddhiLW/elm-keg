@@ -11,10 +11,11 @@ import BackendTask.Glob as Glob
 import Cloudinary
 import Date exposing (Date)
 import FatalError exposing (FatalError)
-import Json.Decode as Decode
+import Json.Decode as Decode exposing (Decoder)
 import Pages.Url exposing (Url)
 import Route
 import UnsplashImage
+import UrlPath exposing (UrlPath)
 
 
 {-| Minimal record for blog posts captured by `blogPostsGlob`.
@@ -39,8 +40,8 @@ type alias ArticleMetadata =
 {-| Matches `.md` files in `content/blog/` and returns their paths + slugs.
 -}
 type alias Keg =
-    { -- filePath : String
-      entry : Int
+    { filePath : String
+    , entry : Int
     , slug : String
     }
 
@@ -52,7 +53,7 @@ blogPostsGlob :
 blogPostsGlob =
     -- File.bodyWithoutFrontmatter
     Glob.succeed Keg
-        -- |> Glob.captureFilePath
+        |> Glob.captureFilePath
         |> Glob.match (Glob.literal "content/blog/")
         |> Glob.capture Glob.int
         |> Glob.match (Glob.literal "/")
@@ -64,8 +65,8 @@ blogPostsGlob =
                 kegs
                     |> List.map
                         (\keg ->
-                            { -- filePath = keg.filePath
-                              entry = keg.entry
+                            { filePath = keg.filePath
+                            , entry = keg.entry
                             , slug = keg.slug -- Dynamically use the wildcard capture
                             }
                         )
@@ -73,21 +74,6 @@ blogPostsGlob =
             )
 
 
-{-| Returns a list of `(Route, ArticleMetadata)` for each `.md` file.
-
-Instead of parsing frontmatter, this creates placeholder data:
-
-  - title: `"Placeholder Title"`
-  - description: `"Placeholder Description"`
-  - published: always `2024-01-01T00:00:00Z` (or fallback date)
-  - image: always `Cloudinary.url "placeholder" Nothing 800`
-  - draft: `False`
-
-We then sort descending by the `published` date,
-and produce a `BackendTask` with the same error type
-that you had in your template (`File.FileReadError Decode.Error`).
-
--}
 allMetadata :
     BackendTask.BackendTask
         { fatal : FatalError, recoverable : File.FileReadError Decode.Error }
@@ -98,48 +84,80 @@ allMetadata =
             (\paths ->
                 paths
                     |> List.map
-                        (\{ entry, slug } ->
-                            let
-                                route =
-                                    Route.Blog__Entry___Slug_ { entry = String.fromInt entry, slug = slug }
-
-                                metadata =
-                                    { title = "Placeholder Title"
-                                    , description = "Placeholder Description"
-                                    , published =
-                                        case Date.fromIsoString "2024-01-01" of
-                                            Ok d ->
-                                                d
-
-                                            Err _ ->
-                                                case Date.fromIsoString "2023-01-01T00:00:00Z" of
-                                                    Ok fallback ->
-                                                        fallback
-
-                                                    Err _ ->
-                                                        Debug.todo "Failed to parse fallback date"
-                                    , image =
-                                        Cloudinary.url "placeholder" Nothing 800
-                                    , draft = False
-                                    }
-                            in
-                            BackendTask.succeed ( route, metadata )
+                        (\{ filePath, slug, entry } ->
+                            --                             let
+                            --                                 route =
+                            --                                     Route.Blog__Entry___Slug_ { entry = String.fromInt entry, slug = slug }
+                            BackendTask.map2 Tuple.pair
+                                (BackendTask.succeed <| Route.Blog__Entry___Slug_ { entry = String.fromInt entry, slug = slug })
+                                (File.onlyFrontmatter frontmatterDecoder filePath)
                         )
             )
         |> BackendTask.resolve
         |> BackendTask.map
-            (List.filterMap
-                (\( route, metadata ) ->
-                    if metadata.draft then
-                        Nothing
+            (\articles ->
+                articles
+                    |> List.filterMap
+                        (\( route, metadata ) ->
+                            if metadata.draft then
+                                Nothing
 
-                    else
-                        Just ( route, metadata )
-                )
+                            else
+                                Just ( route, metadata )
+                        )
             )
         |> BackendTask.map
             (List.sortBy
-                (\( route, metadata ) ->
-                    -(Date.toRataDie metadata.published)
-                )
+                (\( route, metadata ) -> -(Date.toRataDie metadata.published))
+            )
+
+
+frontmatterDecoder : Decoder ArticleMetadata
+frontmatterDecoder =
+    Decode.map5 ArticleMetadata
+        (Decode.field "title" Decode.string)
+        (Decode.field "description" Decode.string)
+        (Decode.field "published"
+            (Decode.string
+                |> Decode.andThen
+                    (\isoString ->
+                        case Date.fromIsoString isoString of
+                            Ok date ->
+                                Decode.succeed date
+
+                            Err error ->
+                                Decode.fail error
+                    )
+            )
+        )
+        -- (Decode.oneOf
+        (Decode.field "image" imageDecoder)
+        -- [
+        -- , Decode.field "image" imageDecoder
+        -- , Decode.field "unsplash" UnsplashImage.decoder |> Decode.map UnsplashImage.imagePath
+        -- ]
+        -- )
+        (Decode.field "draft" Decode.bool
+            |> Decode.maybe
+            |> Decode.map (Maybe.withDefault False)
+        )
+
+
+
+-- imageDecoder : Decoder Url
+-- imageDecoder =
+--     Decode.string
+--         |> Decode.map (\cloudinaryAsset -> Cloudinary.url cloudinaryAsset Nothing 800)
+
+
+imageDecoder : Decoder Url
+imageDecoder =
+    Decode.string
+        |> Decode.map
+            (\imagePath ->
+                let
+                    combinedPath =
+                        UrlPath.fromString ("/content/blog/" ++ imagePath)
+                in
+                Pages.Url.fromPath combinedPath
             )

@@ -1,0 +1,74 @@
+
+--
+--
+
+
+{-| Returns a list of `(Route, ArticleMetadata)` for each `.md` file.
+
+Instead of parsing frontmatter, this creates placeholder data:
+
+  - title: `"Placeholder Title"`
+  - description: `"Placeholder Description"`
+  - published: always `2024-01-01T00:00:00Z` (or fallback date)
+  - image: always `Cloudinary.url "placeholder" Nothing 800`
+  - draft: `False`
+
+We then sort descending by the `published` date,
+and produce a `BackendTask` with the same error type
+that you had in your template (`File.FileReadError Decode.Error`).
+
+-}
+
+
+
+-- allMetadata :
+--     BackendTask.BackendTask
+--         { fatal : FatalError, recoverable : File.FileReadError Decode.Error }
+--         (List ( Route.Route, ArticleMetadata ))
+-- allMetadata =
+--     blogPostsGlob
+--         |> BackendTask.map
+--             (\paths ->
+--                 paths
+--                     |> List.map
+--                         (\{ entry, slug } ->
+--                             let
+--                                 route =
+--                                     Route.Blog__Entry___Slug_ { entry = String.fromInt entry, slug = slug }
+--                                 metadata =
+--                                     { title = "Placeholder Title"
+--                                     , description = "Placeholder Description"
+--                                     , published =
+--                                         case Date.fromIsoString "2024-01-01" of
+--                                             Ok d ->
+--                                                 d
+--                                             Err _ ->
+--                                                 case Date.fromIsoString "2023-01-01T00:00:00Z" of
+--                                                     Ok fallback ->
+--                                                         fallback
+--                                                     Err _ ->
+--                                                         Debug.todo "Failed to parse fallback date"
+--                                     , image =
+--                                         Cloudinary.url "placeholder" Nothing 800
+--                                     , draft = False
+--                                     }
+--                             in
+--                             BackendTask.succeed ( route, metadata )
+--                         )
+--             )
+--         |> BackendTask.resolve
+--         |> BackendTask.map
+--             (List.filterMap
+--                 (\( route, metadata ) ->
+--                     if metadata.draft then
+--                         Nothing
+--                     else
+--                         Just ( route, metadata )
+--                 )
+--             )
+--         |> BackendTask.map
+--             (List.sortBy
+--                 (\( route, metadata ) ->
+--                     -(Date.toRataDie metadata.published)
+--                 )
+--             )

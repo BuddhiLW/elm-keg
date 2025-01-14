@@ -8,7 +8,7 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Element.Region as Region
+import Element.Region as Region exposing (description)
 import FatalError exposing (FatalError)
 import Head
 import Head.Seo as Seo
@@ -63,31 +63,31 @@ view :
     -> Shared.Model
     -> View msg
 view app shared =
-    { title = "elm-pages blog"
+    { title = "Knowledge Exchange Graph"
     , attributes = []
     , body =
         [ column
             [ width fill
             , Background.color (rgb255 243 244 246)
-            , paddingXY 16 20
+            , paddingXY 0 20
             ]
             [ el
-                [ Font.size 36
+                [ Font.size 50
                 , Font.bold
+                , centerX
                 , Font.color (rgb255 17 24 39)
                 ]
-                (text "Blog")
+                (text "BuddhiLW's KEG Content")
             , el
-                [ Font.size 30
+                [ Font.size 40
                 , Font.color (rgb255 107 114 128)
                 , centerX
-                , Element.paddingXY 0 60
+                , Element.paddingXY 0 30
                 ]
                 (text blogDescription)
             , Element.wrappedRow
-                [ -- Element.centerX
-                  -- Element.spaceEvenly
-                  Element.spacingXY 60 60
+                [ Element.spacingXY 50 40
+                , spaceEvenly
                 , width fill
                 , height fill
                 ]
@@ -128,24 +128,52 @@ blogCard ( route_, info ) =
     Element.link []
         { url = Route.toString route_
         , label =
+            let
+                -- Split the text into the first letter and the rest
+                firstDescriptionLetter =
+                    String.left 1 info.description
+                        |> String.toUpper
+
+                restDescriptionText =
+                    String.dropLeft 1 info.description
+
+                descriptionBodyFontSize =
+                    14
+
+                descriptionFontSpacing =
+                    5
+            in
             Element.el
-                [--  Element.width (Element.fillPortion 1)
-                 -- , Element.height Element.fill
+                [ Element.width fill
+                , paddingXY 50 0
+                , alignLeft
                 ]
                 (Element.column
-                    [ spacing 12 ]
-                    [ el
+                    [ spacing 12
+                    , Element.width (px 500)
+                    ]
+                    [ Element.paragraph
                         [ Region.heading 1
                         , alignLeft
                         , Font.size 28
+                        , width Element.fill
                         ]
-                        (text info.title)
-                    , el
-                        [ Region.heading 3
-                        , Font.center
-                        , Font.size 14
+                        [ text info.title ]
+                    , Element.paragraph
+                        [ Region.heading 2
+                        , width Element.fill
+                        , Font.size descriptionBodyFontSize
+                        , spacing descriptionFontSpacing
                         ]
-                        (text info.description)
+                        [ Element.el
+                            [ Font.size <| (3 * descriptionBodyFontSize + 2 * descriptionFontSpacing)
+                            , alignLeft
+                            ]
+                            (Element.text firstDescriptionLetter)
+
+                        -- Larger font size for the first letter
+                        , Element.text restDescriptionText -- Normal font size for the rest of the text
+                        ]
                     , el
                         [ Region.heading 3
                         , Font.center
@@ -174,4 +202,4 @@ blogCard ( route_, info ) =
 
 blogDescription : String
 blogDescription =
-    "The latest elm-pages news and articles."
+    "Zettlekesten notes taken with KEG technology."

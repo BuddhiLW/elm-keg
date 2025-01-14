@@ -7,6 +7,7 @@ import Data.Author as Author exposing (Author, lookupAuthor)
 import Date exposing (Date)
 import DateOrDateTime
 import Element exposing (..)
+import Element.Border as Border
 import FatalError exposing (FatalError)
 import Head
 import Head.Seo as Seo
@@ -103,15 +104,50 @@ view app shared =
     { title = app.data.metadata.title
     , attributes = []
     , body =
+        let
+            imageWidth =
+                300
+
+            imageHeight =
+                300
+
+            borderWidth =
+                imageWidth // 2
+        in
         [ Element.el
-            []
-            (Element.column []
+            [ -- centerX
+              -- centerY
+              width fill
+            ]
+            (Element.column
+                [ --Element.centerX
+                  -- centerX
+                  width fill
+                , spacing 30
+                , padding 10
+                ]
                 [ Element.el
-                    [ Element.centerX ]
-                    (Element.text app.data.metadata.title)
+                    [ Element.centerX
+                    , clip
+                    , alignTop
+                    , Border.rounded borderWidth
+                    ]
+                    (Element.image
+                        [ width (px imageWidth)
+                        , height (px imageHeight)
+                        ]
+                        { src = Pages.Url.toString app.data.metadata.image
+                        , description = app.data.metadata.description
+                        }
+                    )
 
                 -- , Element.el [] (authorView author app.data |> htmlToElement)
-                , Element.column [] renderedMarkdown
+                , Element.column
+                    [ width fill
+                    , alignLeft
+                    , paddingXY 100 10
+                    ]
+                    renderedMarkdown
                 ]
             )
         ]
@@ -264,11 +300,12 @@ frontmatterDecoder =
                     )
             )
         )
-        (Decode.oneOf
-            [ Decode.field "image" imageDecoder
-            , Decode.field "unsplash" UnsplashImage.decoder |> Decode.map UnsplashImage.imagePath
-            ]
-        )
+        -- (Decode.oneOf
+        -- [
+        (Decode.field "image" imageDecoder)
+        -- , Decode.field "unsplash" UnsplashImage.decoder |> Decode.map UnsplashImage.imagePath
+        -- ]
+        -- )
         (Decode.field "draft" Decode.bool
             |> Decode.maybe
             |> Decode.map (Maybe.withDefault False)
@@ -278,4 +315,18 @@ frontmatterDecoder =
 imageDecoder : Decode.Decoder Pages.Url.Url
 imageDecoder =
     Decode.string
-        |> Decode.map (\cloudinaryAsset -> Cloudinary.url cloudinaryAsset Nothing 800)
+        |> Decode.map
+            (\imagePath ->
+                let
+                    combinedPath =
+                        UrlPath.fromString ("/content/blog/" ++ imagePath)
+                in
+                Pages.Url.fromPath combinedPath
+            )
+
+
+
+-- imageDecoder : Decode.Decoder Pages.Url.Url
+-- imageDecoder =
+--     Decode.string
+--         |> Decode.map (\cloudinaryAsset -> Cloudinary.url cloudinaryAsset Nothing 800)
