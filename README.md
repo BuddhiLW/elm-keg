@@ -1,42 +1,28 @@
-# elm-pages-starter
+# BLW's KEG website
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/dillonkearns/elm-pages-starter)
+Using (elm-pages)[https://elm-pages.com/] to make KEG in the web format as simple, indexable, and beautiful as possible.
+
+Of course, redability is a must.
+
+(elm-ui)[https://github.com/mdgriffith/elm-ui] was used, instead of CSS.
 
 ## Setup Instructions
 
-You can clone this repo with `git clone https://github.com/dillonkearns/elm-pages-starter.git`.
+- Clone project;
+- Clone a KEG (will have to add front-matter for all notes);
+- Move KEG to `/content/blog`;
+- `elm-pages dev`;
+- Access `localhost:1234/blog`;
 
-`npm install` from the cloned repo. Before running the dev server or build, make sure to install Lamdera (see below).
-
-`npm start` starts the dev server with hot reloading.
-
-`npm run build` builds the app for production.
-
-### Install Lamdera
-
-`elm-pages` 3.0 uses the lamdera compiler, which is a superset of the Elm compiler with some extra functionality to automatically serialize Elm types to Bytes.
-
-### Debugging Lamdera Errors
-
-Sometimes Lamdera will give compiler errors due to corrupted dependency cache. These messages will display a note at the bottom:
-
-```
--- PROBLEM BUILDING DEPENDENCIES ---------------
-
-...
-
-
-Note: Sometimes `lamdera reset` can fix this problem by rebuilding caches, so
-give that a try first.
+``` sh
+git clone https://github.com/BuddhiLW/elm-keg.git
+cd elm-keg
+mkdir -p ./content
+git clone https://github.com/BuddhiLW/blw-zet.git ./content/blog
 ```
 
-Be sure to use `lamdera reset` to reset the caches for these cases. See more info about that in the Lamdera docs: https://dashboard.lamdera.app/docs/ides-and-tooling#problem-corrupt-caches
+``` sh
+elm-pages dev
+```
 
-### Docs
 
-Check out [the Package Docs](https://package.elm-lang.org/packages/dillonkearns/elm-pages/latest/). You can also use `npx elm-pages docs` from your project to view the documentation for the `RouteBuilder` module.
-
-## Running Scripts with `elm-pages run`
-
-- `npm install`
-- `npx elm-pages run script/src/AddRoute.elm User.Id_`, or `npx elm-pages run script/src/AddStaticRoute.elm HelloWorld` - now you can try out the generator! And you can tweak it, or even define new generator modules in the `script/` folder! You can also shorten this command to `npx elm-pages run AddRoute User.Id_` if you prefer.

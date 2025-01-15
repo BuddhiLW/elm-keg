@@ -150,18 +150,25 @@ blogCard ( route_, info ) =
                 ]
                 (Element.column
                     [ spacing 12
-                    , Element.width (px 500)
+                    , width
+                        fill
                     ]
                     [ Element.paragraph
                         [ Region.heading 1
                         , alignLeft
                         , Font.size 28
-                        , width Element.fill
+                        , width
+                            (fill
+                                |> maximum 300
+                            )
                         ]
                         [ text info.title ]
                     , Element.paragraph
                         [ Region.heading 2
-                        , width Element.fill
+                        , width
+                            (fill
+                                |> maximum 300
+                            )
                         , Font.size descriptionBodyFontSize
                         , spacing descriptionFontSpacing
                         ]
