@@ -1,10 +1,10 @@
 # BLW's KEG website
 
-Using (elm-pages)[https://elm-pages.com/] to make KEG in the web format as simple, indexable, and beautiful as possible.
+Using [elm-pages](https://elm-pages.com/) to make KEG in the web format as simple, indexable, and beautiful as possible.
 
 Of course, redability is a must.
 
-(elm-ui)[https://github.com/mdgriffith/elm-ui] was used, instead of CSS.
+[elm-ui](https://github.com/mdgriffith/elm-ui) was used, instead of CSS.
 
 ## Setup Instructions
 
