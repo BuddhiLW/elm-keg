@@ -1,175 +1,77 @@
 module View.Header exposing (..)
 
-import Css
-import Html.Styled exposing (..)
-import Html.Styled.Attributes as Attr exposing (css)
-import Html.Styled.Events
-import Svg.Styled exposing (path, svg)
-import Svg.Styled.Attributes as SvgAttr
-import Tailwind.Breakpoints as Bp
-import Tailwind.Theme as Theme
-import Tailwind.Utilities as Tw
+-- import Css exposing (spaceBetween)
+
+import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
+import Elm exposing (hex)
 import UrlPath exposing (UrlPath)
 
 
-view : msg -> Int -> UrlPath -> Html msg
-view toggleMobileMenuMsg stars currentPath =
-    nav
-        [ css
-            [ Tw.flex
-            , Tw.items_center
-            , Tw.bg_color Theme.white
-            , Tw.z_20
-            , Tw.sticky
-            , Tw.top_0
-            , Tw.left_0
-            , Tw.right_0
-            , Tw.h_16
-            , Tw.border_b
-            , Tw.border_color Theme.gray_200
-            , Tw.px_6
-
-            --, Bp.dark
-            --    [ Tw.bg_dark
-            --    , Tw.border_gray_900
-            --    ]
-            ]
+view :
+    msg
+    -> UrlPath
+    -> Element msg -- Int -> UrlPath -> Element msg
+view toggleMobileMenuMsg currentPath =
+    Element.row
+        [ Background.color (rgb 50 120 50)
+        , paddingXY 35 0
+        , width fill
+        , height (px 64)
+        , Border.color (rgb 0 0 0)
         ]
-        [ div
-            [ css
-                [ Tw.hidden
-                , Tw.w_full
-                , Tw.flex
-                , Tw.items_center
-                , Bp.md
-                    [ Tw.block
-                    ]
-                ]
+        [ logo
+        , row
+            [ spacing 16
+            , alignRight
+            , centerY
             ]
-            [ a
-                [ css
-                    [ Tw.no_underline
-                    , Tw.text_color Theme.current
-                    , Tw.flex
-                    , Tw.items_center
-                    , Css.hover
-                        [ Tw.opacity_75
-                        ]
-                    ]
-                , Attr.href "/"
-                ]
-                [ span
-                    [ css
-                        [ Tw.mr_0
-                        , Tw.neg_ml_2
-                        , Tw.font_extrabold
-                        , Tw.inline
-                        , Bp.md
-                            [ Tw.inline
-                            ]
-                        ]
-                    ]
-                    [ text "elm-pages" ]
-                ]
+            [ headerLinkElement currentPath "showcase" "Showcase"
+            , headerLinkElement currentPath "blog" "Knowledge"
+            , headerLinkElement currentPath "docs" "Docs"
             ]
-        , headerLink currentPath "showcase" "Showcase"
-        , headerLink currentPath "blog" "Blog"
-        , span
-            [ css
-                [ Tw.hidden
-                , Bp.md
-                    [ Tw.inline
-                    ]
-                ]
-            ]
-            [ headerLink currentPath "docs" "Docs" ]
-        , button
-            [ Attr.type_ "button"
-            , Html.Styled.Events.onClick toggleMobileMenuMsg
-            , css
-                [ Tw.flex
-                , Tw.items_center
-                , Tw.px_1
-                , Tw.border
-                , Tw.border_color Theme.gray_300
-                , Tw.shadow_sm
-                , Tw.text_sm
-                , Tw.rounded_md
-                , Tw.text_color Theme.gray_700
-                , Tw.bg_color Theme.white
-                , Bp.md [ Tw.hidden ]
-                , Css.focus
-                    [ Tw.outline_none
-                    , Tw.ring_2
-                    , Tw.ring_offset_2
-                    , Tw.ring_color Theme.blue_500
-                    ]
-                , Css.hover
-                    [ Tw.bg_color Theme.gray_50
-                    ]
-                ]
-            ]
-            [ linkInner currentPath "docs" "Docs"
-            , svg
-                [ SvgAttr.css
-                    [ Tw.h_5
-                    , Tw.w_5
-                    ]
-                , SvgAttr.viewBox "0 0 20 20"
-                , SvgAttr.fill "currentColor"
-                ]
-                [ path
-                    [ SvgAttr.fillRule "evenodd"
-                    , SvgAttr.d "M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                    , SvgAttr.clipRule "evenodd"
-                    ]
-                    []
-                ]
-            ]
-        , div
-            [ css
-                [ Tw.neg_mr_2
-                ]
-            ]
-            []
         ]
 
 
-headerLink : UrlPath -> String -> String -> Html msg
-headerLink currentPagePath linkTo name =
-    a
-        [ Attr.href ("/" ++ linkTo)
-        , Attr.attribute "elm-pages:prefetch" "true"
+logo : Element msg
+logo =
+    Element.link
+        [ Font.bold
+        , Font.size 24
+        , Font.color (rgb255 255 50 80) -- Neutral dark from Tailwind
         ]
-        [ linkInner currentPagePath linkTo name ]
+        { url = "/"
+        , label = text "BLW"
+        }
 
 
-linkInner : UrlPath -> String -> String -> Html msg
-linkInner currentPagePath linkTo name =
+headerLinkElement : UrlPath -> String -> String -> Element msg
+headerLinkElement currentPath linkTo name =
     let
-        isCurrentPath : Bool
         isCurrentPath =
-            List.head currentPagePath == Just linkTo
-    in
-    span
-        [ css
-            [ Tw.text_sm
-            , Tw.p_2
-            , if isCurrentPath then
-                Css.batch
-                    [ Tw.text_color Theme.blue_600
-                    , Css.hover
-                        [ Tw.text_color Theme.blue_700
-                        ]
-                    ]
+            List.head currentPath == Just linkTo
 
-              else
-                Css.batch
-                    [ Tw.text_color Theme.gray_600
-                    , Css.hover
-                        [ Tw.text_color Theme.gray_900
-                        ]
-                    ]
-            ]
+        linkStyle =
+            if isCurrentPath then
+                [ Font.color (rgb255 10 200 100)
+                , Font.extraBold
+                , Font.glow (rgb255 30 255 80) 6
+                ]
+
+            else
+                [ Font.color (rgb 0 0 0) ]
+    in
+    Element.link
+        [ Border.rounded 0
+        , padding 10
+
+        -- , spacingBetween 16
+        -- , Border.solid (px 0)
+        , Font.size 16
         ]
-        [ text name ]
+        { url = "/" ++ linkTo
+        , label =
+            el linkStyle (text name)
+        }

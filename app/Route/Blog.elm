@@ -67,8 +67,8 @@ view app shared =
     , attributes = []
     , body =
         [ column
-            [ width fill
-            , Background.color (rgb255 243 244 246)
+            [ -- width fill
+              Background.color (rgb255 243 244 246)
             , paddingXY 0 20
             ]
             [ el
@@ -86,7 +86,7 @@ view app shared =
                 ]
                 (text blogDescription)
             , Element.wrappedRow
-                [ Element.spacingXY 50 40
+                [ Element.spacingXY 0 40
                 , spaceEvenly
                 , width fill
                 , height fill
@@ -145,7 +145,7 @@ blogCard ( route_, info ) =
             in
             Element.el
                 [ Element.width fill
-                , paddingXY 50 0
+                , paddingXY 45 0
                 , alignLeft
                 ]
                 (Element.column

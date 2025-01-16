@@ -2,16 +2,20 @@ module TableOfContents exposing (..)
 
 import BackendTask exposing (BackendTask)
 import BackendTask.File
-import Css
+import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Events exposing (onClick)
+import Element.Font as Font
+import Element.Input as Input
 import FatalError exposing (FatalError)
-import Html.Styled exposing (..)
-import Html.Styled.Attributes as Attr exposing (css)
 import List.Extra
 import Markdown.Block as Block exposing (Block, Inline)
 import Markdown.Parser
-import Tailwind.Breakpoints as Bp
-import Tailwind.Theme as Theme
-import Tailwind.Utilities as Tw
+
+
+
+-- Backend Task
 
 
 backendTask :
@@ -157,10 +161,6 @@ buildToc blocks =
         |> List.reverse
 
 
-
---|> Tuple.second
-
-
 gatherHeadings : List Block -> List ( Block.HeadingLevel, List Inline )
 gatherHeadings blocks =
     List.filterMap
@@ -185,144 +185,66 @@ rawTextToId rawText =
 
 styledToString : List Inline -> String
 styledToString inlines =
-    --List.map .string list
-    --|> String.join "-"
-    -- TODO do I need to hyphenate?
     inlines
         |> Block.extractInlineText
 
 
-surround : Bool -> Bool -> List (Html msg) -> Html msg
+surround : Bool -> Bool -> List (Element msg) -> Element msg
 surround showMobileMenu onDocsPage children =
-    aside
-        [ css
-            [ Tw.h_screen
-            , Tw.bg_color Theme.white
-            , Tw.flex_shrink_0
-            , Tw.top_0
-            , Tw.pt_16
-            , Tw.w_full
-            , if showMobileMenu then
-                Tw.block
-
-              else
-                Tw.hidden
-            , Tw.fixed
-            , Tw.z_10
-
-            --, Bp.dark
-            --    [ Tw.bg_dark
-            --    ]
-            , Bp.md
-                [ Tw.w_64
-                , Tw.block
-                , if onDocsPage then
-                    Tw.sticky
-
-                  else
-                    Tw.hidden
-                , Tw.flex_shrink_0
-                ]
-            ]
+    el
+        [ Background.color (rgb255 0 0 0)
+        , Border.rounded 8
+        , Border.color (rgb255 229 231 235)
+        , padding 16
+        , spacing 16
+        , width fill
         ]
-        [ div
-            [ css
-                [ Tw.border_color Theme.gray_200
-                , Tw.w_full
-                , Tw.p_4
-                , Tw.pb_40
-                , Tw.h_full
-                , Tw.overflow_y_auto
-
-                --, Bp.dark
-                --    [ Tw.border_gray_900
-                --    ]
-                , Bp.md
-                    [ Tw.pb_16
-                    ]
-                ]
-            ]
-            children
-        ]
+        (column [] children)
 
 
-view : Bool -> Bool -> Maybe String -> TableOfContents Data -> Html msg
+view : Bool -> Bool -> Maybe String -> TableOfContents Data -> Element msg
 view showMobileMenu onDocsPage current toc =
     surround showMobileMenu
         onDocsPage
-        [ ul
-            []
-            (toc
-                |> List.map (level1Entry current)
-            )
-        ]
+        (toc |> List.map (level1Entry current))
 
 
-level1Entry : Maybe String -> Entry Data -> Html msg
+level1Entry : Maybe String -> Entry Data -> Element msg
 level1Entry current (Entry data children) =
-    let
-        isCurrent =
-            current == Just data.anchorId
-    in
-    li
-        [ css
-            [ Tw.space_y_3
-            , Tw.text_color Theme.gray_900
-            , Tw.rounded_lg
-            ]
-        ]
-        [ item isCurrent ("/docs/" ++ data.anchorId) data.name
-        , ul
-            [ css
-                [ Tw.space_y_3
-                ]
-            ]
+    column
+        [ spacing 8 ]
+        [ item (current == Just data.anchorId) ("/docs/" ++ data.anchorId) data.name
+        , column
+            [ spacing 4 ]
             (children
                 |> List.map (level2Entry data.anchorId)
             )
         ]
 
 
-item : Bool -> String -> String -> Html msg
+item : Bool -> String -> String -> Element msg
 item isCurrent href body =
-    a
-        [ Attr.href href
-        , css
-            [ Tw.block
-            , Tw.w_full
-            , Tw.text_left
-            , Tw.text_base
-            , Tw.no_underline
-            , Tw.mt_1
-            , Tw.p_2
-            , Tw.rounded
-            , Tw.select_none
-            , Tw.outline_none
-            , if isCurrent then
-                Css.batch
-                    [ Tw.bg_color Theme.gray_200
-                    , Tw.font_semibold
-                    ]
+    link
+        [ Font.size 16
+        , Font.bold
+        , if isCurrent then
+            Font.color (rgb255 59 130 246)
+            -- Blue for current item
 
-              else
-                Css.batch
-                    [ Css.hover
-                        [ Tw.text_color Theme.black
-                        , Tw.bg_color Theme.gray_100
-                        ]
-                    , Tw.text_color Theme.gray_500
-                    ]
-            ]
+          else
+            Font.color (rgb255 107 114 128)
+
+        -- Gray for others
         ]
-        [ text body ]
+        { url = href
+        , label = text body
+        }
 
 
-level2Entry : String -> Entry Data -> Html msg
-level2Entry parentPath (Entry data children) =
-    li
-        [ css
-            [ Tw.ml_4
-            ]
+level2Entry : String -> Entry Data -> Element msg
+level2Entry parentPath (Entry data _) =
+    el
+        [ padding 4
+        , Font.color (rgb255 156 163 175)
         ]
-        [ item False ("/docs/" ++ parentPath ++ "#" ++ data.anchorId) data.name
-        ]
+        (item False ("/docs/" ++ parentPath ++ "#" ++ data.anchorId) data.name)

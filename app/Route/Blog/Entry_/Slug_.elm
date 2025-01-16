@@ -95,12 +95,6 @@ view app shared =
                 |> Html.Styled.toUnstyled
                 |> Element.html
 
-        -- Convert Html.Html to Element
-        -- renderedMarkdown =
-        --     app.data.body
-        --         |> Markdown.Renderer.render TailwindMarkdownRenderer.renderer
-        --         |> Result.withDefault []
-        --         |> List.map htmlToElement
         renderedMarkdown =
             app.data.body
                 |> Markdown.Renderer.render ElmUiRenderer.customRenderer
@@ -122,14 +116,15 @@ view app shared =
                 imageWidth // 2
         in
         [ Element.el
-            [ -- centerX
-              -- centerY
-              width fill
+            [ centerX
+
+            -- , centerY
+            , width fill
             ]
             (Element.column
-                [ --Element.centerX
-                  -- centerX
-                  width fill
+                [ -- Element.centerX
+                  centerX
+                , width fill
                 , spacing 30
                 , padding 10
                 ]
@@ -147,8 +142,6 @@ view app shared =
                         , description = app.data.metadata.description
                         }
                     )
-
-                -- , Element.el [] (authorView author app.data |> htmlToElement)
                 , Element.column
                     [ Element.width Element.fill
                     , Element.spacingXY 0 5
